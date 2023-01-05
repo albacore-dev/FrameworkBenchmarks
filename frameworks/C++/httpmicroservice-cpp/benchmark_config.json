@@ -1,0 +1,26 @@
+{
+  "framework": "httpmicroservice-cpp",
+  "tests": [
+    {
+      "default": {
+        "json_url": "/json",
+        "plaintext_url": "/plaintext",
+        "port": 8080,
+        "approach": "Realistic",
+        "classification": "Micro",
+        "database": "mysql",
+        "framework": "httpmicroservice-cpp",
+        "language": "C++",
+        "flavor": "None",
+        "orm": "Raw",
+        "platform": "Boost.Beast",
+        "webserver": "None",
+        "os": "Linux",
+        "database_os": "Linux",
+        "display_name": "httpmicroservice-cpp",
+        "notes": "",
+        "versus": "None"
+      }
+    }
+  ]
+}
