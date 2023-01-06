@@ -1,24 +1,20 @@
 #include "handler.hpp"
 
+#include <httpmicroservice/format.hpp>
 #include <httpmicroservice/service.hpp>
 
 #include <boost/asio/signal_set.hpp>
-//#include <fmt/core.h>
+#include <fmt/core.h>
 
-// #include <cstdio>
+#include <cstdio>
 #include <exception>
 
 namespace asio = boost::asio;
-namespace http = boost::beast::http;
 namespace usrv = httpmicroservice;
 
-asio::awaitable<usrv::response> hello(usrv::request req)
+void reporter(const usrv::session_stats& stats)
 {
-    usrv::response res{http::status::ok, req.version()};
-    res.set(http::field::content_type, "application/json");
-    res.body() = "{\"hello\": \"world\"}";
-
-    co_return res;
+    fmt::print("{}\n", stats);
 }
 
 int main()
@@ -26,7 +22,7 @@ int main()
     try {
         asio::io_context ioc;
 
-        usrv::async_run(ioc, 8080, httpmicroservice_benchmark::Handler{});
+        usrv::async_run(ioc, 8080, httpmicroservice_benchmark::Handler{}, reporter);
 
         asio::signal_set signals{ioc, SIGINT, SIGTERM};
         signals.async_wait([&ioc](auto ec, auto sig) { ioc.stop(); });
@@ -35,11 +31,10 @@ int main()
 
         return 0;
     } catch (std::exception& e) {
-        // fmt::print(stderr, "{}\n", e.what());
+        fmt::print(stderr, "{}\n", e.what());
     } catch (...) {
-        // fmt::print(stderr, "unknown exception\n");
+        fmt::print(stderr, "unknown exception\n");
     }
 
     return -1;
 }
-

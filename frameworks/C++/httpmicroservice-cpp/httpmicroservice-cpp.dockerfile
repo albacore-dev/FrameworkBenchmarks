@@ -47,4 +47,3 @@ COPY --from=builder /usr/local/bin/httpmicroservice_benchmark /usrv
 ENTRYPOINT ["/usrv"]
 
 EXPOSE 8080
-
