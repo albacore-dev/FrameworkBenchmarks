@@ -12,11 +12,11 @@ constexpr auto kServerName = "usrv";
 
 usrv::response make_response(http::status status, const usrv::request& req)
 {
-    //const std::tm now = fmt::gmtime(std::time(nullptr));
+    const std::tm now = fmt::gmtime(std::time(nullptr));
 
     usrv::response res{status, req.version()};
-    //res.set(http::field::server, kServerName);
-    //res.set(http::field::date, fmt::format("{:%a, %d %b %Y %T} GMT", now));
+    res.set(http::field::server, kServerName);
+    res.set(http::field::date, fmt::format("{:%a, %d %b %Y %T} GMT", now));
 
     return res;
 }

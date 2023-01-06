@@ -1,3 +1,4 @@
+# Build with static musl/libc and libstdc++ to run on scratch image
 FROM alpine:latest as builder
 
 # Install build requirements from package repo
@@ -9,11 +10,9 @@ RUN apk update && apk add --no-cache \
     make \
     ninja \
     py-pip
-#    liburing-dev \
 
 # Install conan package manager
-RUN pip install conan --upgrade \
-    && conan profile new default --detect
+RUN pip install conan --upgrade
 
 # Copy repo source code
 COPY ./src /source
@@ -24,8 +23,7 @@ WORKDIR /source/build
 # Download dependencies and generate cmake toolchain file
 RUN conan install .. --build=missing
 
-# Configure, build with static musl/libc and libstdc++ so we can run on the
-# scratch empty base image
+# Configure
 RUN cmake .. -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
@@ -36,11 +34,7 @@ RUN cmake --build .
 # Install
 RUN cmake --install . --strip
 
-FROM alpine:latest as runtime
-
-RUN apk update && apk add --no-cache libstdc++
-
-# FROM scratch as runtime
+FROM scratch as runtime
 
 COPY --from=builder /usr/local/bin/httpmicroservice_benchmark /usrv
 
