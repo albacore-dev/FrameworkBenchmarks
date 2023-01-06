@@ -12,11 +12,12 @@ FetchContent_Declare(
     GIT_TAG v0.7.0)
 
 set(httpmicroservice_ENABLE_STANDALONE ON)
+set(httpmicroservice_ENABLE_IO_URING OFF)
 set(httpmicroservice_BUILD_TESTING OFF)
 
 FetchContent_MakeAvailable(httpmicroservice)
 
-add_executable(httpmicroservice_benchmark main.cpp)
+add_executable(httpmicroservice_benchmark handler.cpp main.cpp)
 
 target_link_libraries(
     httpmicroservice_benchmark

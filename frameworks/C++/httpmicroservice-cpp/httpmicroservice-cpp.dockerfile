@@ -5,14 +5,15 @@ RUN apk update && apk add --no-cache \
     cmake \
     g++ \
     git \
-    liburing-dev \
     linux-headers \
     make \
     ninja \
     py-pip
+#    liburing-dev \
 
 # Install conan package manager
-RUN pip install conan --upgrade && conan profile new default --detect
+RUN pip install conan --upgrade \
+    && conan profile new default --detect
 
 # Copy repo source code
 COPY ./src /source
@@ -35,7 +36,11 @@ RUN cmake --build .
 # Install
 RUN cmake --install . --strip
 
-FROM scratch as runtime
+FROM alpine:latest as runtime
+
+RUN apk update && apk add --no-cache libstdc++
+
+# FROM scratch as runtime
 
 COPY --from=builder /usr/local/bin/httpmicroservice_benchmark /usrv
 
