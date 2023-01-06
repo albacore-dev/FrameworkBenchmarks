@@ -1,14 +1,22 @@
 #include "handler.hpp"
 
+#include <fmt/chrono.h>
+
+#include <ctime>
+
 namespace httpmicroservice_benchmark {
 
 namespace http = boost::beast::http;
 
+constexpr auto kServerName = "usrv";
+
 usrv::response make_response(http::status status, const usrv::request& req)
 {
+    const std::tm now = fmt::gmtime(std::time(nullptr));
+
     usrv::response res{status, req.version()};
-    res.set(http::field::server, "usrv");
-    res.set(http::field::date, "Wed, 21 Oct 2015 07:28:00 GMT");
+    res.set(http::field::server, kServerName);
+    res.set(http::field::date, fmt::format("{:%a, %d %b %Y %T} GMT", now));
 
     return res;
 }
@@ -23,7 +31,7 @@ usrv::response get(const usrv::request& req)
         res.set(http::field::content_type, "text/plain");
         res.body() = "Hello, World!";
     } else {
-	res.result(http::status::not_found);
+        res.result(http::status::not_found);
     }
 
     return res;
