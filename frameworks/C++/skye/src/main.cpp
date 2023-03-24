@@ -43,9 +43,9 @@ int main()
 #include <fmt/core.h>
 
 #include <boost/asio/signal_set.hpp>
+#include <httpmicroservice/service.hpp>
 #include <cstdio>
 #include <exception>
-#include <httpmicroservice/service.hpp>
 
 namespace asio = boost::asio;
 namespace http = boost::beast::http;
@@ -89,6 +89,8 @@ int main()
 
 #endif
 
+#if 0
+
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/io_context.hpp>
@@ -96,16 +98,16 @@ int main()
 #include <boost/asio/read.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/signal_set.hpp>
-#include <boost/asio/write.hpp>
 #include <boost/asio/system_timer.hpp>
+#include <boost/asio/write.hpp>
 
-#include <fmt/core.h>
 #include <fmt/chrono.h>
+#include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include <ctime>
 #include <array>
 #include <cstdio>
+#include <ctime>
 #include <exception>
 
 namespace asio = boost::asio;
@@ -234,6 +236,33 @@ int main() {
         return 0;
     } catch (std::exception& e) {
         std::fprintf(stderr, "Exception: %s\n", e.what());
+    }
+
+    return -1;
+}
+
+#endif
+
+#include "mux.hpp"
+
+#include <fmt/core.h>
+#include <skye/service.hpp>
+
+#include <cstdio>
+#include <exception>
+
+int main()
+{
+    try {
+        const skye_benchmark::Mux mux;
+
+        skye::run(8080, mux);
+
+        return 0;
+    } catch (std::exception& e) {
+        fmt::print(stderr, "{}\n", e.what());
+    } catch (...) {
+        fmt::print(stderr, "unknown exception\n");
     }
 
     return -1;

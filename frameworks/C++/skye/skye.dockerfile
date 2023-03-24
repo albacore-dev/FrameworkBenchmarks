@@ -11,22 +11,21 @@ RUN apk update && apk add --no-cache \
     ninja \
     py-pip
 
-# Install conan package manager
-RUN pip install conan --upgrade
+RUN pip install conan && conan profile detect
 
-# Copy repo source code
+RUN git clone https://github.com/luketokheim/skye /skye
+WORKDIR skye
+RUN cat tools/standalone.conf >> ~/.conan2/global.conf
+RUN conan create . --build=missing
+
 COPY ./src /source
+WORKDIR /source
+RUN conan install . --build=missing
 
-# Run cmake commands from the build folder
-WORKDIR /source/build
-
-# Download dependencies and generate cmake toolchain file
-RUN conan install .. --build=missing
-
-# Configure
-RUN cmake .. -GNinja \
+WORKDIR /source/build/Release
+RUN cmake ../.. -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+    -DCMAKE_TOOLCHAIN_FILE=generators/conan_toolchain.cmake
 
 # Build
 RUN cmake --build .
