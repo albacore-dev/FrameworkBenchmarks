@@ -1,5 +1,5 @@
 # Build with static musl/libc and libstdc++ to run on scratch image
-FROM alpine:latest as builder
+FROM alpine:3.17 as builder
 
 # Install build requirements from package repo
 RUN apk update && apk add --no-cache \
@@ -36,8 +36,8 @@ RUN cmake --install . --strip
 
 FROM scratch as runtime
 
-COPY --from=builder /usr/local/bin/httpmicroservice_benchmark /usrv
+COPY --from=builder /usr/local/bin/skye_benchmark /skye
 
-ENTRYPOINT ["/usrv"]
+ENTRYPOINT ["/skye"]
 
 EXPOSE 8080

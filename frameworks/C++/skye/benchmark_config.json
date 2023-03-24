@@ -1,5 +1,5 @@
 {
-  "framework": "httpmicroservice-cpp",
+  "framework": "skye",
   "tests": [
     {
       "default": {
@@ -9,7 +9,7 @@
         "approach": "Realistic",
         "classification": "Micro",
         "database": "mysql",
-        "framework": "httpmicroservice-cpp",
+        "framework": "skye",
         "language": "C++",
         "flavor": "None",
         "orm": "Raw",
@@ -17,7 +17,7 @@
         "webserver": "None",
         "os": "Linux",
         "database_os": "Linux",
-        "display_name": "httpmicroservice-cpp",
+        "display_name": "skye",
         "notes": "",
         "versus": "None"
       }
