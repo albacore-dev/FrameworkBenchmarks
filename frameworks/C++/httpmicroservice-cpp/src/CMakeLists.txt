@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     httpmicroservice
     GIT_REPOSITORY https://github.com/luketokheim/httpmicroservice-cpp.git
-    GIT_TAG 20f8e6fd37e921e1e72ccea790bacb832d3ac682
+    GIT_TAG a1e59f5893364482973a64efae42107e2fa14b7e
     OVERRIDE_FIND_PACKAGE)
 
 set(ENABLE_STANDALONE ON)
