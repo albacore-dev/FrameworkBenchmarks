@@ -6,7 +6,7 @@
 
 namespace skye_benchmark {
 
-struct Object {
+struct Model {
     std::string message;
 };
 
@@ -18,14 +18,14 @@ struct World {
 } // namespace skye_benchmark
 
 template <>
-struct fmt::formatter<skye_benchmark::Object> {
+struct fmt::formatter<skye_benchmark::Model> {
     constexpr auto parse(format_parse_context& ctx)
     {
         return ctx.begin();
     }
 
     template <typename FormatContext>
-    auto format(const skye_benchmark::Object& model, FormatContext& ctx) const
+    auto format(const skye_benchmark::Model& model, FormatContext& ctx) const
     {
         return fmt::format_to(
             ctx.out(), "{{\"message\":\"{}\"}}", model.message);

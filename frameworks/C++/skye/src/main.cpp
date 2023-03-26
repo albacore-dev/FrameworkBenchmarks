@@ -1,3 +1,4 @@
+#include "context.hpp"
 #include "mux.hpp"
 
 #include <fmt/core.h>
@@ -12,8 +13,8 @@ int main()
     namespace asio = boost::asio;
 
     try {
-        const skye_benchmark::Mux mux{
-            std::make_shared<skye_benchmark::Context>()};
+        const skye_benchmark::Mux mux{std::make_shared<skye_benchmark::Context>(
+            skye_benchmark::SQLiteContext{"database.db"})};
 
         asio::io_context ioc{1};
 

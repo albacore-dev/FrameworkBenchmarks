@@ -5,9 +5,12 @@ project(skye_benchmark)
 find_package(skye)
 find_package(Boost)
 find_package(fmt)
+find_package(SQLite3)
 
 add_executable(
     skye_benchmark
+    context.cpp
+    database.cpp
     main.cpp
     mux.cpp)
 
@@ -18,7 +21,8 @@ target_link_libraries(
     PRIVATE
     skye::skye
     Boost::boost
-    fmt::fmt)
+    fmt::fmt
+    SQLite::SQLite3)
 
 # target_compile_definitions(skye_benchmark PRIVATE BOOST_ASIO_HAS_IO_URING BOOST_ASIO_DISABLE_EPOLL)
 # target_link_libraries(skye_benchmark PRIVATE uring)

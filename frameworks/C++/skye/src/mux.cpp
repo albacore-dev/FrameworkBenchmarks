@@ -3,10 +3,12 @@
 
 #include <boost/asio/system_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
-#include <boost/url/parse.hpp>
+#include <boost/url/src.hpp>
 #include <fmt/chrono.h>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
+
+#include <charconv>
 
 namespace skye_benchmark {
 
@@ -14,6 +16,12 @@ constexpr auto kServerName = "skye";
 constexpr auto kContentTypeJson = "application/json";
 constexpr auto kContentTypeText = "text/plain";
 constexpr auto kHelloMessage = "Hello, World!";
+constexpr int kMinParam = 1;
+constexpr int kMaxParam = 500;
+
+// Parse an integer query parameter from the request. Returns kMinParam if no
+// matching parameter is found.
+int parse_param(const skye::request& req, std::string_view name);
 
 asio::awaitable<skye::response> Mux::operator()(skye::request req) const
 {
@@ -41,7 +49,7 @@ asio::awaitable<skye::response> Mux::operator()(skye::request req) const
 
 skye::response Mux::json(const skye::request& req) const
 {
-    const Object model{kHelloMessage};
+    const Model model{kHelloMessage};
 
     auto res = make_response(http::status::ok, req);
     res.set(http::field::content_type, kContentTypeJson);
@@ -52,21 +60,36 @@ skye::response Mux::json(const skye::request& req) const
 
 skye::response Mux::db(const skye::request& req) const
 {
-    const World model{1, 10000};
+    const auto model = ctx->db.getRandomModel();
+    if (!model) {
+        return make_response(http::status::not_found, req);
+    }
 
     auto res = make_response(http::status::ok, req);
     res.set(http::field::content_type, kContentTypeJson);
-    res.body() = fmt::format("{}", model);
+    res.body() = fmt::format("{}", *model);
 
     return res;
 }
 
 skye::response Mux::queries(const skye::request& req) const
 {
-    // auto url = boost::urls::parse_origin_form(req.target());
-    // auto params = url.params();
+    const int queries = parse_param(req, "queries");
+    if ((queries < kMinParam) || (queries > kMaxParam)) {
+        return make_response(http::status::internal_server_error, req);
+    }
 
-    const std::vector<World> models{{1, 10000}, {2, 9999}};
+    std::vector<World> models;
+    models.reserve(queries);
+
+    for (int i = 0; i < queries; ++i) {
+        const auto model = ctx->db.getRandomModel();
+        if (!model) {
+            return make_response(http::status::not_found, req);
+        }
+
+        models.push_back(*model);
+    }
 
     auto res = make_response(http::status::ok, req);
     res.set(http::field::content_type, kContentTypeJson);
@@ -96,19 +119,29 @@ Mux::make_response(http::status status, const skye::request& req) const
     return res;
 }
 
-asio::awaitable<void> async_poll_date(std::shared_ptr<Context> ctx)
+int parse_param(const skye::request& req, std::string_view name)
 {
-    using namespace std::chrono_literals;
-
-    asio::system_timer timer{co_await asio::this_coro::executor};
-    for (;;) {
-        const auto now = std::chrono::system_clock::now();
-
-        ctx->now = fmt::gmtime(std::chrono::system_clock::to_time_t(now));
-
-        timer.expires_at(now + std::chrono::seconds{1});
-        co_await timer.async_wait(asio::use_awaitable);
+    const auto result = boost::urls::parse_origin_form(req.target());
+    if (!result.has_value()) {
+        return kMinParam;
     }
+
+    // Linear scan through the query parameters. Return the first one that:
+    // - Matches the name
+    // - Contains an integer, even if its out of the [1, 500] range
+    const auto url_view = result.value();
+    for (const auto& qp : url_view.params()) {
+        if ((qp.key == name) && qp.has_value) {
+            int value = kMinParam;
+            if (std::from_chars(
+                    qp.value.data(), qp.value.data() + qp.value.size(), value)
+                    .ec == std::errc{}) {
+                return std::max(std::min(value, kMaxParam), kMinParam);
+            }
+        }
+    }
+
+    return kMinParam;
 }
 
 } // namespace skye_benchmark
