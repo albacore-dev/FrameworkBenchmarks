@@ -4,6 +4,7 @@ project(skye_benchmark)
 
 find_package(skye)
 find_package(Boost)
+find_package(fmt)
 
 add_executable(
     skye_benchmark
@@ -16,6 +17,10 @@ target_link_libraries(
     skye_benchmark
     PRIVATE
     skye::skye
-    Boost::boost)
+    Boost::boost
+    fmt::fmt)
+
+# target_compile_definitions(skye_benchmark PRIVATE BOOST_ASIO_HAS_IO_URING BOOST_ASIO_DISABLE_EPOLL)
+# target_link_libraries(skye_benchmark PRIVATE uring)
 
 install(TARGETS skye_benchmark RUNTIME)

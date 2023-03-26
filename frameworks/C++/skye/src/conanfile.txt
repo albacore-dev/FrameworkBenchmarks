@@ -1,13 +1,14 @@
 [requires]
+boost/1.81.0
 skye/0.9.0
+fmt/9.1.0
 
 [generators]
 CMakeDeps
 CMakeToolchain
 
 [options]
-skye*:enable_standalone=True
-skye*:with_sqlite3=True
+boost*:header_only=True
 
 [layout]
 cmake_layout
