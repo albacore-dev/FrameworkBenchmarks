@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <optional>
+#include <random>
 #include <string>
 
 namespace skye_benchmark {
@@ -36,6 +37,10 @@ private:
     // Prepared statement depends on the connection.
     UniqueConnection connection_;
     UniqueStatement statement_;
+
+    // Used to randomly select a row by its id field in `getRandomModel`.
+    std::mt19937 engine_;
+    std::uniform_int_distribution<int> uniform_dist_;
 };
 
 } // namespace skye_benchmark

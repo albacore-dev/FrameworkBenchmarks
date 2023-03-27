@@ -4,21 +4,30 @@
 
 namespace skye_benchmark {
 
+constexpr int kMinId = 1;
+constexpr int kMaxId = 10000;
+
 SQLiteContext::SQLiteContext(const std::string& filename)
     : connection_{MakeConnection(filename)}, statement_{MakeStatement(
-                                                 connection_.get())}
+                                                 connection_.get())},
+      engine_{std::random_device{}()}, uniform_dist_{kMinId, kMaxId}
 {
 }
 
 std::optional<World> SQLiteContext::getRandomModel()
 {
+    constexpr int kNumParam = 1;
     constexpr int kNumColumn = 2;
+
+    const int id = uniform_dist_(engine_);
 
     std::optional<World> model;
 
     auto* stmt = statement_.get();
 
-    if ((sqlite3_step(stmt) == SQLITE_ROW) &&
+    if ((sqlite3_bind_parameter_count(stmt) == kNumParam) &&
+        (sqlite3_bind_int(stmt, kNumParam, id) == SQLITE_OK) &&
+        (sqlite3_step(stmt) == SQLITE_ROW) &&
         (sqlite3_column_count(stmt) == kNumColumn) &&
         (sqlite3_column_type(stmt, 0) == SQLITE_INTEGER) &&
         (sqlite3_column_type(stmt, 1) == SQLITE_INTEGER)) {
@@ -78,8 +87,7 @@ SQLiteContext::MakeConnection(const std::string& filename)
 
 SQLiteContext::UniqueStatement SQLiteContext::MakeStatement(sqlite3* db)
 {
-    constexpr std::string_view kSql{
-        "SELECT * FROM world ORDER BY RANDOM() LIMIT 1;"};
+    constexpr std::string_view kSql{"SELECT * FROM world WHERE id=?;"};
 
     sqlite3_stmt* ptr = nullptr;
 

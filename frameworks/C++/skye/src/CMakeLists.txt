@@ -24,7 +24,10 @@ target_link_libraries(
     fmt::fmt
     SQLite::SQLite3)
 
-# target_compile_definitions(skye_benchmark PRIVATE BOOST_ASIO_HAS_IO_URING BOOST_ASIO_DISABLE_EPOLL)
-# target_link_libraries(skye_benchmark PRIVATE uring)
+target_compile_definitions(
+    skye_benchmark
+    PRIVATE
+    BOOST_ASIO_HAS_IO_URING BOOST_ASIO_DISABLE_EPOLL)
+target_link_libraries(skye_benchmark PRIVATE uring)
 
 install(TARGETS skye_benchmark RUNTIME)

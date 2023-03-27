@@ -1,6 +1,7 @@
 #include "context.hpp"
 #include "mux.hpp"
 
+#include <boost/asio/thread_pool.hpp>
 #include <fmt/core.h>
 #include <skye/service.hpp>
 
@@ -13,18 +14,25 @@ int main()
     namespace asio = boost::asio;
 
     try {
-        const skye_benchmark::Mux mux{std::make_shared<skye_benchmark::Context>(
-            skye_benchmark::SQLiteContext{"database.db"})};
+        const auto context = std::make_shared<skye_benchmark::Context>(
+            skye_benchmark::SQLiteContext{"database.db"});
 
-        asio::io_context ioc{1};
+        // Run mux router, handlers, and anything that access the context.
+        asio::thread_pool pool{1};
 
-        co_spawn(ioc, skye_benchmark::async_poll_date(mux.ctx), [](auto ptr) {
+        // Updates context::now every second. Runs in the pool.
+        co_spawn(pool, skye_benchmark::async_poll_date(context), [](auto ptr) {
             if (ptr) {
                 std::rethrow_exception(ptr);
             }
         });
 
-        skye::async_run(ioc, 8080, mux);
+        // Run accept loop and HTTP connection I/O.
+        asio::io_context ioc{1};
+
+        skye::async_run(
+            ioc, 8080,
+            skye::make_co_handler(pool, skye_benchmark::Mux{context}));
 
         asio::signal_set signals{ioc, SIGINT, SIGTERM};
         signals.async_wait([&ioc](auto ec, auto sig) { ioc.stop(); });
